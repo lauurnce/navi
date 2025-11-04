@@ -15,27 +15,36 @@ import { ThemedView } from '../components/themed-view';
 import { ThemedText } from '../components/themed-text';
 
 const PRIMARY = '#001E6C';
-const SECONDARY = '#E8DEC8';
 const BG = '#FFFFFF';
 const TEXT = '#1E1E1E';
 const NEUTRAL = '#DADCE0';
 
-export default function SignInScreen() {
+export default function SignUpScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const onSubmit = async () => {
     if (isSubmitting) return;
     setErrorMessage(null);
+    if (!email || !password || !confirmPassword) {
+      setErrorMessage('Please fill in all fields.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage('Passwords do not match.');
+      return;
+    }
     setIsSubmitting(true);
     try {
-      // TODO: Replace with real auth call
-      await new Promise((r) => setTimeout(r, 600));
+      // TODO: Replace with real sign-up call
+      await new Promise((r) => setTimeout(r, 700));
+      // On success, you might want to navigate or show a success message
     } catch (err) {
-      setErrorMessage('Unable to sign in. Please try again.');
+      setErrorMessage('Unable to sign up. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -43,17 +52,17 @@ export default function SignInScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Sign in' }} />
+      <Stack.Screen options={{ title: 'Create account' }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ThemedView style={[styles.container]}> 
+          <ThemedView style={styles.container}>
             <View style={styles.headerArea}>
-              <ThemedText type="title" style={styles.title}>Welcome back</ThemedText>
+              <ThemedText type="title" style={styles.title}>Create your account</ThemedText>
               <ThemedText style={styles.subtitle}>
-                Sign in to continue
+                Join to continue
               </ThemedText>
             </View>
 
@@ -78,7 +87,19 @@ export default function SignInScreen() {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
+                  placeholderTextColor="#8A8A8A"
+                  style={styles.input}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Confirm password</Text>
+                <TextInput
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry
+                  placeholder="Re-enter your password"
                   placeholderTextColor="#8A8A8A"
                   style={styles.input}
                 />
@@ -90,27 +111,20 @@ export default function SignInScreen() {
 
               <Pressable
                 onPress={onSubmit}
-                disabled={isSubmitting || !email || !password}
+                disabled={isSubmitting || !email || !password || !confirmPassword}
                 style={({ pressed }) => [
                   styles.primaryButton,
                   (pressed || isSubmitting) && styles.primaryButtonPressed,
-                  (!email || !password) && styles.primaryButtonDisabled,
+                  (!email || !password || !confirmPassword) && styles.primaryButtonDisabled,
                 ]}
               >
                 <Text style={styles.primaryButtonText}>
-                  {isSubmitting ? 'Signing in…' : 'Sign in'}
+                  {isSubmitting ? 'Creating account…' : 'Create account'}
                 </Text>
               </Pressable>
 
-              <Pressable onPress={() => { /* TODO: forgot password */ }}>
-                <Text style={styles.link}>Forgot password?</Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.footerHint}>
-              <Text style={styles.footerText}>Don’t have an account? </Text>
-              <Pressable onPress={() => router.replace('/sign-up')}>
-                <Text style={styles.linkInline}>Create one</Text>
+              <Pressable onPress={() => router.replace('/sign-in')}>
+                <Text style={styles.link}>Already have an account? Sign in</Text>
               </Pressable>
             </View>
           </ThemedView>
@@ -203,21 +217,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 8,
     textAlign: 'center',
-  },
-  footerHint: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    marginTop: 16,
-  },
-  footerText: {
-    color: '#4A4A4A',
-    fontSize: 14,
-  },
-  linkInline: {
-    color: PRIMARY,
-    fontSize: 14,
-    fontWeight: '700',
   },
 });
 
