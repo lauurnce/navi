@@ -1,0 +1,92 @@
+# Node
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+build/
+dist/
+**/build/
+**/dist/
+
+# Expo / React Native
+.expo/
+.expo-shared/
+.expo/*
+.expo-shared/*
+.expo/web-build/
+.expo/packager-info.json
+.expo/metro-cache/
+.expo/ios-index.json
+**/.expo/
+**/.expo-shared/
+.expo-dev-cache/
+.expo/developer-tools/
+
+# Metro bundler cache
+.metro-cache/
+**/.metro-cache/
+
+# Watchman
+.watchmanconfig
+
+# Android
+android/
+**/android/
+*.apk
+*.aar
+*.ap_*
+*.aab
+
+# iOS
+ios/
+**/ios/
+*.xcodeproj/
+*.xcworkspace/
+Pods/
+**/Pods/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Environment variables
+.env
+.env.*
+**/.env
+**/.env.*
+
+# VSCode
+.vscode/
+.history/
+
+# Coverage
+coverage/
+
+# Temporary
+.tmp/
+tmp/
+.temp/
+
+# Logs
+logs/
+*.log
+
+# Expo assets build output
+web-build/
+**/web-build/
+
+# TypeScript
+*.tsbuildinfo
+
+# Lockfiles backup
+package-lock.json.*
+yarn.lock.*
+
