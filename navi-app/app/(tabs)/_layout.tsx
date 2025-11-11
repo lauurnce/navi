@@ -5,7 +5,11 @@ export default function TabsLayout() {
 	return (
 		<Tabs
 			screenOptions={{
-				headerShown: false,
+				headerShown: true,
+				headerTitle: "NAVI",
+				headerTitleAlign: "center",
+				headerStyle: { backgroundColor: "#FFFFFF" },
+				headerShadowVisible: true,
 				tabBarActiveTintColor: "#5B5BFF",
 				tabBarInactiveTintColor: "#8E8E93",
 				tabBarStyle: {

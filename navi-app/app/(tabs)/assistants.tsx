@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import { GraduationCap, MapPin } from "lucide-react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function AssistantsScreen() {
 	return (
@@ -7,17 +9,23 @@ export default function AssistantsScreen() {
 				<Text style={styles.title}>Assistants</Text>
 				<Text style={styles.subtitle}>Choose an AI helper</Text>
 			</View>
-			<View style={styles.card}>
-				<Text style={styles.cardTitle}>Campus Navigator</Text>
+			<TouchableOpacity
+				activeOpacity={0.85}
+				onPress={() => router.push("/assistants/campus-navigator")}
+				style={styles.card}
+			>
+				<View style={styles.titleRow}>
+					<MapPin color="#5B5BFF" size={20} strokeWidth={2} style={styles.icon} />
+					<Text style={styles.cardTitle}>Campus Navigator</Text>
+				</View>
 				<Text style={styles.cardText}>School-specific help: maps, offices, policies, schedules.</Text>
-			</View>
+			</TouchableOpacity>
 			<View style={styles.card}>
-				<Text style={styles.cardTitle}>AI Tutor</Text>
+				<View style={styles.titleRow}>
+					<GraduationCap color="#5B5BFF" size={20} strokeWidth={2} style={styles.icon} />
+					<Text style={styles.cardTitle}>AI Tutor</Text>
+				</View>
 				<Text style={styles.cardText}>Homework help, explanations, and practice problems.</Text>
-			</View>
-			<View style={styles.card}>
-				<Text style={styles.cardTitle}>More assistants</Text>
-				<Text style={styles.cardText}>Browse and search to discover the right assistant.</Text>
 			</View>
 		</View>
 	);
@@ -55,11 +63,18 @@ const styles = StyleSheet.create({
 		shadowRadius: 8,
 		elevation: 2,
 	},
+	titleRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 12,
+	},
+	icon: {
+		marginRight: 10,
+	},
 	cardTitle: {
 		fontSize: 18,
 		fontWeight: "600",
 		color: "#1A1A1A",
-		marginBottom: 12,
 	},
 	cardText: {
 		fontSize: 14,
