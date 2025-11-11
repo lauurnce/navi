@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ChatsScreen() {
@@ -15,7 +16,11 @@ export default function ChatsScreen() {
 				<Text style={styles.cardTitle}>Recent</Text>
 				<Text style={styles.cardText}>No recent chats yet. Start your first conversation!</Text>
 			</View>
-			<TouchableOpacity style={styles.fab} activeOpacity={0.85}>
+			<TouchableOpacity
+				style={styles.fab}
+				activeOpacity={0.85}
+				onPress={() => router.push("/(tabs)/assistants")}
+			>
 				<Text style={styles.fabText}>＋</Text>
 			</TouchableOpacity>
 		</View>
