@@ -1,6 +1,6 @@
-import { useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import { Send } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	FlatList,
 	Keyboard,
@@ -11,25 +11,48 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import sampleData from "../../data/sample-data.json";
+
+interface Chat {
+	id: string;
+	modelType: "Campus Navigator" | "AI Tutor";
+	subject?: string;
+	lastMessage: string;
+	timestamp: string;
+	messages: { id: string; role: "user" | "assistant"; text: string }[];
+}
 
 export default function CampusNavigatorScreen() {
+	const { chatId } = useLocalSearchParams<{ chatId?: string }>();
 	const navigation = useNavigation();
-	const [messages, setMessages] = useState<
-		{ id: string; role: "user" | "assistant"; text: string }[]
-	>([
+	const [input, setInput] = useState("");
+	const [keyboardHeight, setKeyboardHeight] = useState(0);
+	const listRef = useRef<FlatList>(null);
+
+	const chat = useMemo(() => {
+		if (chatId) {
+			return (sampleData.chats as Chat[]).find((c) => c.id === chatId && c.modelType === "Campus Navigator");
+		}
+		return null;
+	}, [chatId]);
+
+	const [messages, setMessages] = useState<{ id: string; role: "user" | "assistant"; text: string }[]>([
 		{
 			id: "m1",
 			role: "assistant",
 			text: "Hi! I'm Campus Navigator. How can I help on campus today?",
 		},
 	]);
-	const [input, setInput] = useState("");
-	const [keyboardHeight, setKeyboardHeight] = useState(0);
-	const listRef = useRef<FlatList>(null);
 
 	useEffect(() => {
 		navigation.setOptions({ title: "Campus Navigator" });
 	}, [navigation]);
+
+	useEffect(() => {
+		if (chat && chat.messages) {
+			setMessages(chat.messages);
+		}
+	}, [chat]);
 
 	useEffect(() => {
 		const showSubscription = Keyboard.addListener("keyboardDidShow", (e) => {
