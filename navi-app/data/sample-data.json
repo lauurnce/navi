@@ -36,6 +36,13 @@
 			"icon": "GraduationCap",
 			"description": "General homework help and study tips"
 		}
-	]
+	],
+	"user": {
+		"name": "John Doe",
+		"email": "john.doe@university.edu",
+		"course": "Computer Science",
+		"studentId": "2024-12345",
+		"profileImage": null
+	}
 }
 

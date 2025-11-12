@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ProfileScreen() {
 	return (
@@ -7,10 +8,14 @@ export default function ProfileScreen() {
 				<Text style={styles.title}>Profile</Text>
 				<Text style={styles.subtitle}>Account & preferences</Text>
 			</View>
-			<View style={styles.card}>
+			<TouchableOpacity
+				style={styles.card}
+				onPress={() => router.push("/account")}
+				activeOpacity={0.85}
+			>
 				<Text style={styles.cardTitle}>Account</Text>
 				<Text style={styles.cardText}>Sign in to sync chats across devices.</Text>
-			</View>
+			</TouchableOpacity>
 			<View style={styles.card}>
 				<Text style={styles.cardTitle}>Settings</Text>
 				<Text style={styles.cardText}>Theme, notifications, data controls.</Text>
