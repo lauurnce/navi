@@ -20,12 +20,18 @@ interface SubjectData {
 	description: string;
 }
 
+interface Chat {
+	id: string;
+	modelType: "Campus Navigator" | "AI Tutor";
+	subject?: string;
+	lastMessage: string;
+	timestamp: string;
+	messages: { id: string; role: "user" | "assistant"; text: string }[];
+}
+
 export default function AITutorSubjectScreen() {
-	const { subjectId } = useLocalSearchParams<{ subjectId: string }>();
+	const { subjectId, chatId } = useLocalSearchParams<{ subjectId: string; chatId?: string }>();
 	const navigation = useNavigation();
-	const [messages, setMessages] = useState<
-		{ id: string; role: "user" | "assistant"; text: string }[]
-	>([]);
 	const [input, setInput] = useState("");
 	const [keyboardHeight, setKeyboardHeight] = useState(0);
 	const listRef = useRef<FlatList>(null);
@@ -34,11 +40,29 @@ export default function AITutorSubjectScreen() {
 		return (sampleData.subjects as SubjectData[]).find((s) => s.id === subjectId);
 	}, [subjectId]);
 
+	const chat = useMemo(() => {
+		if (chatId) {
+			return (sampleData.chats as Chat[]).find(
+				(c) => c.id === chatId && c.modelType === "AI Tutor" && c.subject === subjectId
+			);
+		}
+		return null;
+	}, [chatId, subjectId]);
+
 	const subjectName = subject?.name || "AI Tutor";
+
+	const [messages, setMessages] = useState<{ id: string; role: "user" | "assistant"; text: string }[]>([]);
 
 	useEffect(() => {
 		if (subject) {
 			navigation.setOptions({ title: subjectName });
+		}
+	}, [navigation, subject, subjectName]);
+
+	useEffect(() => {
+		if (chat && chat.messages) {
+			setMessages(chat.messages);
+		} else if (subject) {
 			setMessages([
 				{
 					id: "m1",
@@ -47,7 +71,7 @@ export default function AITutorSubjectScreen() {
 				},
 			]);
 		}
-	}, [navigation, subject, subjectName]);
+	}, [chat, subject, subjectName]);
 
 	useEffect(() => {
 		const showSubscription = Keyboard.addListener("keyboardDidShow", (e) => {
