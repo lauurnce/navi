@@ -1,6 +1,7 @@
+import * as DocumentPicker from "expo-document-picker";
 import { ChevronDown, FileText, Upload, X } from "lucide-react-native";
 import { useState } from "react";
-import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import sampleData from "../../data/sample-data.json";
 
 interface UploadedFile {
@@ -23,14 +24,30 @@ export default function ShareScreen() {
 
 	const subjects = sampleData.subjects as Subject[];
 
-	const handleFileUpload = () => {
-		// TODO: Implement file picker integration (e.g., expo-document-picker)
-		// For now, this is a placeholder that simulates file selection
-		const mockFile: UploadedFile = {
-			name: "course-material.pdf",
-			uri: "file://mock-path.pdf",
-		};
-		setUploadedFiles((prev) => [...prev, mockFile]);
+	const handleFileUpload = async () => {
+		try {
+			const result = await DocumentPicker.getDocumentAsync({
+				type: "application/pdf",
+				copyToCacheDirectory: true,
+				multiple: false,
+			});
+
+			if (result.canceled) {
+				return;
+			}
+
+			const file = result.assets[0];
+			if (file) {
+				const uploadedFile: UploadedFile = {
+					name: file.name || "document.pdf",
+					uri: file.uri,
+				};
+				setUploadedFiles((prev) => [...prev, uploadedFile]);
+			}
+		} catch (error) {
+			Alert.alert("Error", "Failed to pick document. Please try again.");
+			console.error("Document picker error:", error);
+		}
 	};
 
 	const handleRemoveFile = (index: number) => {
