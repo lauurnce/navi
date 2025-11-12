@@ -1,7 +1,7 @@
 import * as DocumentPicker from "expo-document-picker";
-import { ChevronDown, FileText, Upload, X } from "lucide-react-native";
+import { AlertCircle, CheckCircle, ChevronDown, FileText, Upload, X } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import sampleData from "../../data/sample-data.json";
 
 interface UploadedFile {
@@ -21,8 +21,26 @@ export default function ShareScreen() {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [professorName, setProfessorName] = useState("");
 	const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+	const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+	const [errorTitle, setErrorTitle] = useState("");
+	const [errorMessage, setErrorMessage] = useState("");
+	const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+	const [successTitle, setSuccessTitle] = useState("");
+	const [successMessage, setSuccessMessage] = useState("");
 
 	const subjects = sampleData.subjects as Subject[];
+
+	const showError = (title: string, message: string) => {
+		setErrorTitle(title);
+		setErrorMessage(message);
+		setIsErrorModalOpen(true);
+	};
+
+	const showSuccess = (title: string, message: string) => {
+		setSuccessTitle(title);
+		setSuccessMessage(message);
+		setIsSuccessModalOpen(true);
+	};
 
 	const handleFileUpload = async () => {
 		try {
@@ -45,7 +63,10 @@ export default function ShareScreen() {
 				setUploadedFiles((prev) => [...prev, uploadedFile]);
 			}
 		} catch (error) {
-			Alert.alert("Error", "Failed to pick document. Please try again.");
+			showError(
+				"File Upload Error",
+				"Unable to access your files. Please check that you have granted the necessary permissions and try again."
+			);
 			console.error("Document picker error:", error);
 		}
 	};
@@ -59,6 +80,49 @@ export default function ShareScreen() {
 		setIsDropdownOpen(false);
 	};
 
+	const handleSubmit = () => {
+		if (!selectedSubject) {
+			showError(
+				"Missing Required Field",
+				"Please select a subject from the dropdown menu. This helps us categorize your course materials correctly."
+			);
+			return;
+		}
+
+		if (!professorName.trim()) {
+			showError(
+				"Missing Required Field",
+				"Please enter the professor's name. This information helps us organize and credit the course materials properly."
+			);
+			return;
+		}
+
+		if (uploadedFiles.length === 0) {
+			showError(
+				"Missing Required Field",
+				"Please upload at least one PDF file containing your course materials. You can upload multiple files if needed."
+			);
+			return;
+		}
+
+		const submittedData = {
+			subject: selectedSubject.name,
+			professorName: professorName.trim(),
+			uploadedFiles: uploadedFiles,
+		};
+
+		console.log("=== Form Submission ===");
+		console.log("Subject:", submittedData.subject);
+		console.log("Professor Name:", submittedData.professorName);
+		console.log("Uploaded Files:", submittedData.uploadedFiles);
+		console.log("======================");
+
+		showSuccess(
+			"Submission Successful",
+			"Your course materials have been submitted successfully! This will be reviewed by our team and you will be notified when it is approved."
+		);
+	};
+
 	return (
 		<ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 			<View style={styles.header}>
@@ -68,7 +132,9 @@ export default function ShareScreen() {
 
 			<View style={styles.form}>
 				<View style={styles.inputGroup}>
-					<Text style={styles.label}>Subject</Text>
+					<Text style={styles.label}>
+						Subject <Text style={styles.required}>*</Text>
+					</Text>
 					<TouchableOpacity
 						style={styles.dropdown}
 						onPress={() => setIsDropdownOpen(true)}
@@ -129,7 +195,9 @@ export default function ShareScreen() {
 				</View>
 
 				<View style={styles.inputGroup}>
-					<Text style={styles.label}>Professor Name</Text>
+					<Text style={styles.label}>
+						Professor Name <Text style={styles.required}>*</Text>
+					</Text>
 					<TextInput
 						style={styles.input}
 						placeholder="e.g., Dr. John Smith"
@@ -140,7 +208,9 @@ export default function ShareScreen() {
 				</View>
 
 				<View style={styles.inputGroup}>
-					<Text style={styles.label}>Course Materials (PDF)</Text>
+					<Text style={styles.label}>
+						Course Materials (PDF) <Text style={styles.required}>*</Text>
+					</Text>
 					<TouchableOpacity style={styles.uploadButton} onPress={handleFileUpload} activeOpacity={0.8}>
 						<Upload color="#5B5BFF" size={20} strokeWidth={2} />
 						<Text style={styles.uploadButtonText}>Upload PDF File</Text>
@@ -166,7 +236,71 @@ export default function ShareScreen() {
 						</View>
 					)}
 				</View>
+
+				<TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.8}>
+					<Text style={styles.submitButtonText}>Submit</Text>
+				</TouchableOpacity>
 			</View>
+
+			<Modal
+				visible={isErrorModalOpen}
+				transparent
+				animationType="fade"
+				onRequestClose={() => setIsErrorModalOpen(false)}
+			>
+				<TouchableOpacity
+					style={styles.errorModalOverlay}
+					activeOpacity={1}
+					onPress={() => setIsErrorModalOpen(false)}
+				>
+					<View style={styles.errorModalContent} onStartShouldSetResponder={() => true}>
+						<View style={styles.errorModalBody}>
+							<View style={styles.errorIconContainer}>
+								<AlertCircle color="#EF4444" size={24} strokeWidth={2} />
+							</View>
+							<Text style={styles.errorTitle}>{errorTitle}</Text>
+							<Text style={styles.errorMessage}>{errorMessage}</Text>
+						</View>
+						<TouchableOpacity
+							style={styles.errorModalButton}
+							onPress={() => setIsErrorModalOpen(false)}
+							activeOpacity={0.8}
+						>
+							<Text style={styles.errorModalButtonText}>Got it</Text>
+						</TouchableOpacity>
+					</View>
+				</TouchableOpacity>
+			</Modal>
+
+			<Modal
+				visible={isSuccessModalOpen}
+				transparent
+				animationType="fade"
+				onRequestClose={() => setIsSuccessModalOpen(false)}
+			>
+				<TouchableOpacity
+					style={styles.successModalOverlay}
+					activeOpacity={1}
+					onPress={() => setIsSuccessModalOpen(false)}
+				>
+					<View style={styles.successModalContent} onStartShouldSetResponder={() => true}>
+						<View style={styles.successModalBody}>
+							<View style={styles.successIconContainer}>
+								<CheckCircle color="#10B981" size={24} strokeWidth={2} />
+							</View>
+							<Text style={styles.successTitle}>{successTitle}</Text>
+							<Text style={styles.successMessage}>{successMessage}</Text>
+						</View>
+						<TouchableOpacity
+							style={styles.successModalButton}
+							onPress={() => setIsSuccessModalOpen(false)}
+							activeOpacity={0.8}
+						>
+							<Text style={styles.successModalButtonText}>Got it</Text>
+						</TouchableOpacity>
+					</View>
+				</TouchableOpacity>
+			</Modal>
 		</ScrollView>
 	);
 }
@@ -206,6 +340,9 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		color: "#1A1A1A",
 		marginBottom: 8,
+	},
+	required: {
+		color: "#EF4444",
 	},
 	input: {
 		backgroundColor: "#FFFFFF",
@@ -328,6 +465,141 @@ const styles = StyleSheet.create({
 	},
 	removeButton: {
 		padding: 4,
+	},
+	submitButton: {
+		backgroundColor: "#5B5BFF",
+		borderRadius: 12,
+		paddingVertical: 16,
+		paddingHorizontal: 24,
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: 8,
+		shadowColor: "#5B5BFF",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 4,
+	},
+	submitButtonText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#FFFFFF",
+	},
+	errorModalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0, 0, 0, 0.5)",
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 20,
+	},
+	errorModalContent: {
+		backgroundColor: "#FFFFFF",
+		borderRadius: 16,
+		width: "100%",
+		maxWidth: 400,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.1,
+		shadowRadius: 12,
+		elevation: 8,
+		padding: 24,
+	},
+	errorModalBody: {
+		alignItems: "center",
+		paddingBottom: 20,
+	},
+	errorIconContainer: {
+		width: 48,
+		height: 48,
+		borderRadius: 24,
+		backgroundColor: "#FEE2E2",
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: 16,
+	},
+	errorTitle: {
+		fontSize: 20,
+		fontWeight: "700",
+		color: "#1A1A1A",
+		marginBottom: 12,
+		textAlign: "center",
+	},
+	errorMessage: {
+		fontSize: 15,
+		color: "#6B7280",
+		lineHeight: 22,
+		textAlign: "center",
+	},
+	errorModalButton: {
+		backgroundColor: "#5B5BFF",
+		borderRadius: 12,
+		paddingVertical: 14,
+		width: "100%",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	errorModalButtonText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#FFFFFF",
+	},
+	successModalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0, 0, 0, 0.5)",
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 20,
+	},
+	successModalContent: {
+		backgroundColor: "#FFFFFF",
+		borderRadius: 16,
+		width: "100%",
+		maxWidth: 400,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.1,
+		shadowRadius: 12,
+		elevation: 8,
+		padding: 24,
+	},
+	successModalBody: {
+		alignItems: "center",
+		paddingBottom: 20,
+	},
+	successIconContainer: {
+		width: 48,
+		height: 48,
+		borderRadius: 24,
+		backgroundColor: "#D1FAE5",
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: 16,
+	},
+	successTitle: {
+		fontSize: 20,
+		fontWeight: "700",
+		color: "#1A1A1A",
+		marginBottom: 12,
+		textAlign: "center",
+	},
+	successMessage: {
+		fontSize: 15,
+		color: "#6B7280",
+		lineHeight: 22,
+		textAlign: "center",
+	},
+	successModalButton: {
+		backgroundColor: "#5B5BFF",
+		borderRadius: 12,
+		paddingVertical: 14,
+		width: "100%",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	successModalButtonText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#FFFFFF",
 	},
 });
 
