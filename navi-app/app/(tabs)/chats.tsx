@@ -98,7 +98,7 @@ export default function ChatsScreen() {
 			<TouchableOpacity
 				style={styles.fab}
 				activeOpacity={0.85}
-				onPress={() => router.push("/(tabs)/assistants")}
+				onPress={() => router.push("/(tabs)/home")}
 			>
 				<Text style={styles.fabText}>＋</Text>
 			</TouchableOpacity>

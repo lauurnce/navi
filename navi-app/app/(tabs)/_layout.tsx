@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Bot, MessageCircle, Sparkles, User } from "lucide-react-native";
+import { Bot, Home, MessageCircle, Sparkles, User } from "lucide-react-native";
 
 export default function TabsLayout() {
 	return (
@@ -26,10 +26,10 @@ export default function TabsLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				name="assistants"
+				name="home"
 				options={{
-					title: "Assistants",
-					tabBarIcon: ({ color }) => <Bot color={color} size={22} strokeWidth={2} />,
+					title: "Home",
+					tabBarIcon: ({ color }) => <Home color={color} size={22} strokeWidth={2} />,
 				}}
 			/>
 			<Tabs.Screen
