@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { GraduationCap, MapPin } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const assistantCards = [
@@ -57,7 +58,22 @@ const stardustCards = [
 	},
 ];
 
+const adSlides = [
+	{ id: "ad-1", text: "This will have an ads" },
+	{ id: "ad-2", text: "Coming soon: Partner promos" },
+	{ id: "ad-3", text: "Stay tuned for exclusive deals" },
+];
+
 export default function HomeScreen() {
+	const [activeAdIndex, setActiveAdIndex] = useState(0);
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setActiveAdIndex((prev) => (prev + 1) % adSlides.length);
+		}, 4000);
+		return () => clearInterval(interval);
+	}, []);
+
 	return (
 		<ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 			<View style={styles.header}>
@@ -89,7 +105,7 @@ export default function HomeScreen() {
 
 			<View style={styles.sectionHeader}>
 				<Text style={styles.sectionTitle}>Stardust</Text>
-				<Text style={styles.sectionSubtitle}>Spark curiosity with curated boosts</Text>
+				<Text style={styles.sectionSubtitle}>Featured partner rewards</Text>
 			</View>
 
 			<ScrollView
@@ -115,6 +131,14 @@ export default function HomeScreen() {
 					);
 				})}
 			</ScrollView>
+
+			<View style={styles.sectionHeader}>
+				<Text style={styles.sectionTitle}>Advertisement</Text>
+				
+			</View>
+			<View style={styles.adContainer}>
+				<Text style={styles.adText}>{adSlides[activeAdIndex].text}</Text>
+			</View>
 		</ScrollView>
 	);
 }
@@ -200,6 +224,7 @@ const styles = StyleSheet.create({
 		marginTop: 4,
 	},
 	carouselContent: {
+    marginBottom: 24,
 		paddingRight: 20,
 		gap: 12,
 	},
@@ -243,5 +268,27 @@ const styles = StyleSheet.create({
 		fontSize: 11,
 		fontWeight: "700",
 		color: "#92400E",
+	},
+	adContainer: {
+		width: "100%",
+		backgroundColor: "#FFFFFF",
+		borderRadius: 20,
+		padding: 20,
+		marginTop: 12,
+		marginBottom: 32,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.05,
+		shadowRadius: 12,
+		elevation: 3,
+		alignItems: "center",
+		justifyContent: "center",
+		minHeight: 120,
+	},
+	adText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#1A1A1A",
+		textAlign: "center",
 	},
 });
