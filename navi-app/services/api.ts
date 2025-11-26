@@ -2,20 +2,7 @@
 // It connects your React Native App to your Python Backend
 
 // 1. YOUR BACKEND IP ADDRESS
-// Make sure your Python server is running on this IP!
 export const API_URL = 'http://192.168.1.8:5000';
-
-// --- TYPE DEFINITIONS ---
-interface UploadResponse {
-  message?: string;
-  error?: string;
-  id?: number;
-}
-
-interface ChatResponse {
-  answer?: string;
-  error?: string;
-}
 
 // --- FUNCTION 1: UPLOAD PDF ---
 export const uploadCourseMaterial = async (
@@ -24,16 +11,20 @@ export const uploadCourseMaterial = async (
   fileType: string,
   subject: string,
   professor: string
-): Promise<UploadResponse> => {
+) => {
   try {
     const formData = new FormData();
 
+    // 1. Append the file
+    // On Web, this needs to be handled carefully. 
+    // If fileUri is a blob (common on web), fetch handles it.
     formData.append('file', {
       uri: fileUri,
       name: fileName,
       type: fileType || 'application/pdf',
     } as any);
 
+    // 2. Append text data
     formData.append('subject', subject);
     formData.append('professor', professor);
 
@@ -42,9 +33,9 @@ export const uploadCourseMaterial = async (
     const response = await fetch(`${API_URL}/upload`, {
       method: 'POST',
       body: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      // --- CRITICAL FIX: DO NOT SET HEADERS FOR MULTIPART ---
+      // The browser/device will automatically set the correct boundary.
+      // headers: { 'Content-Type': 'multipart/form-data' }, <--- REMOVED THIS
     });
 
     const result = await response.json();
@@ -52,7 +43,7 @@ export const uploadCourseMaterial = async (
 
   } catch (error) {
     console.error('Bridge Broken (Upload):', error);
-    return { error: 'Network request failed. Is the python backend running?' };
+    return { error: 'Network request failed. Is the backend running?' };
   }
 };
 
@@ -60,12 +51,12 @@ export const uploadCourseMaterial = async (
 export const chatWithAI = async (
   question: string,
   subject: string = 'General'
-): Promise<ChatResponse> => {
+) => {
   try {
     const response = await fetch(`${API_URL}/chat`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json', // JSON still needs this header
       },
       body: JSON.stringify({
         question: question,
