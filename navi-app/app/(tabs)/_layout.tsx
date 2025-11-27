@@ -19,17 +19,17 @@ export default function TabsLayout() {
 			}}
 		>
 			<Tabs.Screen
-				name="chats"
-				options={{
-					title: "Chats",
-					tabBarIcon: ({ color }) => <MessageCircle color={color} size={22} strokeWidth={2} />,
-				}}
-			/>
-			<Tabs.Screen
 				name="home"
 				options={{
 					title: "Home",
 					tabBarIcon: ({ color }) => <Home color={color} size={22} strokeWidth={2} />,
+				}}
+			/>
+			<Tabs.Screen
+				name="chats"
+				options={{
+					title: "Chats",
+					tabBarIcon: ({ color }) => <MessageCircle color={color} size={22} strokeWidth={2} />,
 				}}
 			/>
 			<Tabs.Screen
