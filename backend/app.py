@@ -35,7 +35,7 @@ except Exception as e:
 
 # Models
 EMBEDDING_MODEL = "models/text-embedding-004"
-CHAT_MODEL = "gemini-1.5-flash"
+CHAT_MODEL = "gemini-pro"
 
 # --- HELPER FUNCTIONS ---
 

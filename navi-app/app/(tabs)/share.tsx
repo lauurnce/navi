@@ -1,12 +1,8 @@
 import * as DocumentPicker from "expo-document-picker";
 import { AlertCircle, CheckCircle, ChevronDown, FileText, Upload, X } from "lucide-react-native";
 import { useState } from "react";
-import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native";
+import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator, Platform } from "react-native";
 import sampleData from "../../data/sample-data.json";
-
-// IMPORT THE BRIDGE (Adjust path if needed based on where this file is located)
-import { uploadCourseMaterial } from '../../services/api'; 
-// IF the line above gives an error, try: import { uploadCourseMaterial } from '../../services/api';
 
 interface UploadedFile {
     name: string;
@@ -26,6 +22,8 @@ export default function ShareScreen() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [professorName, setProfessorName] = useState("");
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+    
+    // Loading State
     const [isLoading, setIsLoading] = useState(false);
 
     // Modals
@@ -82,8 +80,9 @@ export default function ShareScreen() {
         setIsDropdownOpen(false);
     };
 
-    // --- THIS IS THE CRITICAL PART THAT CONNECTS TO BACKEND ---
+    // --- UPDATED SUBMIT FUNCTION WITH DIRECT FETCH ---
     const handleSubmit = async () => {
+        // 1. Validation
         if (!selectedSubject || !professorName.trim() || uploadedFiles.length === 0) {
             showError("Missing Fields", "Please fill in all required fields.");
             return;
@@ -92,25 +91,56 @@ export default function ShareScreen() {
         setIsLoading(true);
         const file = uploadedFiles[0];
 
-        // CALL THE BRIDGE
-        const result = await uploadCourseMaterial(
-            file.uri,
-            file.name,
-            file.mimeType || 'application/pdf',
-            selectedSubject.name,
-            professorName
-        );
+        try {
+            // 2. Prepare Data
+            const formData = new FormData();
 
-        setIsLoading(false);
+            // Handle file differently for Web vs Mobile
+            if (Platform.OS === 'web') {
+                // On web, fetch takes the URI and converts it to a blob
+                const res = await fetch(file.uri);
+                const blob = await res.blob();
+                formData.append('file', blob, file.name);
+            } else {
+                // On mobile (Android/iOS)
+                formData.append('file', {
+                    uri: file.uri,
+                    name: file.name,
+                    type: file.mimeType || 'application/pdf',
+                } as any);
+            }
 
-        if (result.error) {
-            showError("Connection Failed", result.error);
-        } else {
-            showSuccess("Upload Successful", "Your file has been sent to the AI database!");
-            // Reset Form
-            setUploadedFiles([]);
-            setProfessorName("");
-            setSelectedSubject(null);
+            // Add text fields
+            formData.append('subject', selectedSubject.name);
+            formData.append('professor', professorName);
+
+            // 3. Call Backend
+            // Replace with your computer's IP address
+            const response = await fetch('http://192.168.1.8:5000/upload', {
+                method: 'POST',
+                body: formData,
+                // Note: Do NOT set Content-Type header manually for FormData; fetch does it automatically
+            });
+
+            const result = await response.json();
+
+            setIsLoading(false);
+
+            // 4. Handle Response
+            if (result.error) {
+                showError("Connection Failed", result.error);
+            } else {
+                showSuccess("Upload Successful", "Your file has been sent to the AI database!");
+                // Reset Form
+                setUploadedFiles([]);
+                setProfessorName("");
+                setSelectedSubject(null);
+            }
+
+        } catch (error) {
+            setIsLoading(false);
+            console.error(error);
+            showError("Network Error", "Could not connect to the backend. Is the Python server running?");
         }
     };
 
