@@ -84,20 +84,21 @@ export default function HomeScreen() {
 			<View style={styles.grid}>
 				{assistantCards.map((card) => {
 					const IconComponent = card.icon;
+					const isAITutor = card.id === "ai-tutor";
 					return (
 						<TouchableOpacity
 							key={card.id}
 							activeOpacity={0.9}
 							onPress={card.onPress}
-							style={styles.card}
+							style={[styles.card, isAITutor && styles.aiTutorCard]}
 						>
 							<View style={styles.titleRow}>
-								<View style={styles.iconBubble}>
-									<IconComponent color="#5B5BFF" size={20} strokeWidth={2} />
+								<View style={[styles.iconBubble, isAITutor && styles.aiTutorIconBubble]}>
+									<IconComponent color={isAITutor ? "#92400E" : "#FFFFFF"} size={22} strokeWidth={2.5} />
 								</View>
-								<Text style={styles.cardTitle}>{card.title}</Text>
+								<Text style={[styles.cardTitle, isAITutor && styles.aiTutorCardTitle]}>{card.title}</Text>
 							</View>
-							<Text style={styles.cardText}>{card.description}</Text>
+							<Text style={[styles.cardText, isAITutor && styles.aiTutorCardText]}>{card.description}</Text>
 						</TouchableOpacity>
 					);
 				})}
@@ -169,19 +170,30 @@ const styles = StyleSheet.create({
 	grid: {
 		flexDirection: "row",
 		flexWrap: "wrap",
-		gap: 12,
+		gap: 14,
 		marginBottom: 24,
 	},
 	card: {
 		width: "48%",
-		backgroundColor: "#FFFFFF",
-		borderRadius: 20,
-		padding: 20,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.05,
-		shadowRadius: 8,
-		elevation: 2,
+		backgroundColor: "#8B8BFF",
+		borderRadius: 24,
+		padding: 24,
+		shadowColor: "#5B5BFF",
+		shadowOffset: { width: 0, height: 12 },
+		shadowOpacity: 0.4,
+		shadowRadius: 20,
+		elevation: 12,
+		borderWidth: 2,
+		borderColor: "rgba(255, 255, 255, 0.3)",
+	},
+	aiTutorCard: {
+		backgroundColor: "#FDE68A",
+		shadowColor: "#F59E0B",
+		shadowOffset: { width: 0, height: 12 },
+		shadowOpacity: 0.4,
+		shadowRadius: 20,
+		elevation: 12,
+		borderColor: "rgba(146, 64, 14, 0.2)",
 	},
 	titleRow: {
 		flexDirection: "row",
@@ -189,24 +201,40 @@ const styles = StyleSheet.create({
 		marginBottom: 12,
 	},
 	iconBubble: {
-		width: 36,
-		height: 36,
-		borderRadius: 18,
-		backgroundColor: "#EEF2FF",
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		backgroundColor: "rgba(255, 255, 255, 0.25)",
 		alignItems: "center",
 		justifyContent: "center",
-		marginRight: 10,
+		marginRight: 12,
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.3)",
 	},
 	cardTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: "#1A1A1A",
+		fontSize: 19,
+		fontWeight: "700",
+		color: "#FFFFFF",
+		letterSpacing: 0.3,
 	},
 	cardText: {
 		fontSize: 14,
-		color: "#4B5563",
+		color: "#FFFFFF",
 		marginBottom: 8,
 		lineHeight: 20,
+		opacity: 0.95,
+		fontWeight: "500",
+	},
+	aiTutorIconBubble: {
+		backgroundColor: "rgba(146, 64, 14, 0.15)",
+		borderColor: "rgba(146, 64, 14, 0.25)",
+	},
+	aiTutorCardTitle: {
+		color: "#92400E",
+	},
+	aiTutorCardText: {
+		color: "#92400E",
+		opacity: 0.85,
 	},
 	sectionHeader: {
 		marginTop: 8,
