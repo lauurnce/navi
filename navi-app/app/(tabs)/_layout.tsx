@@ -1,12 +1,19 @@
 import { Tabs } from "expo-router";
 import { Bot, Home, MessageCircle, Sparkles, User } from "lucide-react-native";
+import { Image } from "react-native";
 
 export default function TabsLayout() {
 	return (
 		<Tabs
 			screenOptions={{
 				headerShown: true,
-				headerTitle: "NAVI",
+				headerTitle: () => (
+					<Image 
+						source={require("../../assets/images/navi-logo.png")} 
+						style={{ width: 100, height: 40 }} 
+						resizeMode="contain"
+					/>
+				),
 				headerTitleAlign: "center",
 				headerStyle: { backgroundColor: "#FFFFFF" },
 				headerShadowVisible: true,
