@@ -2,7 +2,7 @@
 // It connects your React Native App to your Python Backend
 
 // 1. YOUR BACKEND IP ADDRESS
-export const API_URL = 'http://192.168.1.8:5000';
+export const API_URL = 'https://navi-seven-pink.vercel.app';
 
 // --- FUNCTION 1: UPLOAD PDF ---
 export const uploadCourseMaterial = async (
