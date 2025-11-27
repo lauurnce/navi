@@ -122,6 +122,8 @@ export default function AITutorSubjectScreen() {
             console.log(`Asking AI about ${subjectName}: ${trimmed}`);
             const result = await chatWithAI(trimmed, subjectName);
 
+            console.log('AI Response:', result);
+
             // 3. Process Response
             if (result.answer) {
                 const aiMessage = {

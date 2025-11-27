@@ -12,7 +12,7 @@ import {
 	View,
 } from "react-native";
 import sampleData from "../../data/sample-data.json";
-
+import { chatWithAI } from '../../services/api'; 
 interface Chat {
 	id: string;
 	modelType: "Campus Navigator" | "AI Tutor";
@@ -68,24 +68,49 @@ export default function CampusNavigatorScreen() {
 		};
 	}, []);
 
-	const handleSend = () => {
-		const trimmed = input.trim();
-		if (!trimmed) return;
-		const userMessage = { id: `u-${Date.now()}`, role: "user" as const, text: trimmed };
-		setMessages((prev) => [...prev, userMessage]);
-		setInput("");
-		// Demo assistant echo
-		setTimeout(() => {
-			setMessages((prev) => [
-				...prev,
-				{
-					id: `a-${Date.now()}`,
-					role: "assistant",
-					text: "Got it. I’ll help you with that. Could you share more details?",
-				},
-			]);
-		}, 500);
-	};
+	const handleSend = async () => {
+			const trimmed = input.trim();
+			if (!trimmed) return;
+	
+			// 1. Add User Message locally
+			const userMessage = { id: `u-${Date.now()}`, role: "user" as const, text: trimmed };
+			setMessages((prev) => [...prev, userMessage]);
+			setInput("");
+	
+			try {
+				// 2. Call the AI Bridge
+				// We pass the subjectName so the backend filters by "Programming", "Mathematics", etc.
+				
+				const result = await chatWithAI(trimmed, "Campus");
+	
+				console.log('AI Response:', result);
+	
+				// 3. Process Response
+				if (result.answer) {
+					const aiMessage = {
+						id: `a-${Date.now()}`,
+						role: "assistant" as const,
+						text: result.answer,
+					};
+					setMessages((prev) => [...prev, aiMessage]);
+				} else {
+					const errorMsg = {
+						id: `e-${Date.now()}`,
+						role: "assistant" as const,
+						text: "I'm having trouble connecting to the server. Is the Python backend running?",
+					};
+					setMessages((prev) => [...prev, errorMsg]);
+				}
+			} catch (error) {
+				const errorMsg = {
+					id: `e-${Date.now()}`,
+					role: "assistant" as const,
+					text: "Network error. Please check your connection.",
+				};
+				setMessages((prev) => [...prev, errorMsg]);
+			} finally {
+			}
+		};
 
 	const renderMessage = ({ item }: { item: { id: string; role: "user" | "assistant"; text: string } }) => {
 		const isUser = item.role === "user";

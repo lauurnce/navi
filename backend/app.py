@@ -35,7 +35,7 @@ except Exception as e:
 
 # Models
 EMBEDDING_MODEL = "models/text-embedding-004"
-CHAT_MODEL = "gemini-pro"
+CHAT_MODEL = "gemini-2.5-flash"
 
 # --- HELPER FUNCTIONS ---
 
@@ -129,60 +129,103 @@ def upload_material():
 @app.route('/chat', methods=['POST'])
 def chat_agent():
     """
-    Handles chat for BOTH 'AI Tutor' and 'Campus Navigator'.
-    Expects JSON: { "question": "...", "subject": "Mathematics" }
+    Handles chat for BOTH:
+      - 'AI Tutor' (when a subject like Mathematics, Physics, etc. is provided)
+      - 'Campus Navigator' (when subject == "Campus" OR subject is None)
     """
     data = request.json
     user_question = data.get('question')
-    subject = data.get('subject') # Optional. If "Campus Navigator", pass "Campus"
-    
+    subject = data.get('subject')  # e.g., "Mathematics" or "Campus"
+
     if not user_question:
         return jsonify({"error": "No question provided"}), 400
 
     print(f"Question: {user_question} | Subject: {subject}")
 
     try:
-        # 1. Embed Question
+        # ------------------------------------------------------
+        # 1. Determine Mode (AI Tutor or Campus Navigator)
+        # ------------------------------------------------------
+        if subject and subject.lower() != "campus":
+            mode = "tutor"
+        else:
+            mode = "navigator"
+
+        # ------------------------------------------------------
+        # 2. Embed Question
+        # ------------------------------------------------------
         query_embedding_result = genai.embed_content(
             model=EMBEDDING_MODEL,
             content=user_question,
             task_type="retrieval_query"
         )
-        query_vector = query_embedding_result['embedding']
+        query_vector = query_embedding_result["embedding"]
 
-        # 2. Prepare Filter (This is the Magic Part)
-        # If the user is in the "Math" chat, only search Math docs.
+        # ------------------------------------------------------
+        # 3. Prepare Vector Filter
+        # ------------------------------------------------------
         match_filter = {}
-        if subject and subject != "General":
-            match_filter = {"subject": subject}
 
-        # 3. Search Supabase (Vector Search)
-        rpc_response = supabase.rpc('match_documents', {
-            'query_embedding': query_vector,
-            'match_threshold': 0.4, # Lower = more results, less strict
-            'match_count': 5,
-            'filter': match_filter 
+        if mode == "tutor":
+            # Tutor: search only documents for the subject
+            match_filter = {"subject": subject}
+        else:
+            # Campus Navigator: search only navigation/campus files
+            match_filter = {"subject": "Campus"}
+
+        # ------------------------------------------------------
+        # 4. Supabase Vector Search
+        # ------------------------------------------------------
+        rpc_response = supabase.rpc("match_documents", {
+            "query_embedding": query_vector,
+            "match_threshold": 0.4,
+            "match_count": 5,
+            "filter": match_filter
         }).execute()
 
-        # 4. Construct Context for AI
+        # ------------------------------------------------------
+        # 5. Build Context
+        # ------------------------------------------------------
         context_text = ""
         for doc in rpc_response.data:
-            context_text += f"-- Source ({doc['metadata'].get('filename')}):\n{doc['content'][:1000]}\n\n"
+            filename = doc["metadata"].get("filename")
+            context_text += (
+                f"-- Source ({filename}):\n"
+                f"{doc['content'][:1000]}\n\n"
+            )
 
         if not context_text:
-            context_text = "No specific documents found for this topic."
+            context_text = "No specific documents were found for this topic."
 
-        # 5. Send to Gemini
+        # ------------------------------------------------------
+        # 6. Build System Instructions
+        # ------------------------------------------------------
+        if mode == "tutor":
+            mode_instruction = (
+                "You are 'Navi', an AI Tutor. Explain concepts clearly and "
+                "relate answers to the student's subject whenever possible."
+            )
+        else:
+            mode_instruction = (
+                "You are 'Navi', a Campus Navigator AI. Provide directions, "
+                "campus information, building locations, and university resources."
+            )
+
         system_instruction = f"""
-        You are 'Navi', a helpful university AI assistant.
-        Context loaded: {subject if subject else "General Knowledge"}
-        
-        Use the provided CONTEXT to answer the student's question. 
-        If the answer is found in the context, cite the source filename.
-        If the answer is NOT in the context, use your general knowledge but mention that it wasn't in the uploaded notes.
-        Keep answers concise and encouraging.
+        {mode_instruction}
+        Current Mode: {mode}
+        Subject Context: {subject if subject else "General"}
+
+        Use the provided CONTEXT to answer the student's question.
+        If the answer is found in the CONTEXT, cite the source filename.
+        If the answer is NOT found, use general knowledge but mention that the answer
+        was not found in the uploaded notes.
+        Keep the answer concise and encouraging.
         """
 
+        # ------------------------------------------------------
+        # 7. Generate AI Response
+        # ------------------------------------------------------
         prompt = f"""
         Context:
         {context_text}
@@ -194,7 +237,7 @@ def chat_agent():
             model_name=CHAT_MODEL,
             system_instruction=system_instruction
         )
-        
+
         response = model.generate_content(prompt)
 
         return jsonify({"answer": response.text})
